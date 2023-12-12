@@ -3,7 +3,9 @@ package de.rieckpil.courses.book.review;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import de.rieckpil.courses.config.WebSecurityConfig;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,14 +42,45 @@ class ReviewControllerTest {
 
   @Test
   void shouldNotReturnReviewStatisticsWhenUserIsUnauthenticated() throws Exception {
+    this.mockMvc
+      .perform(get("/api/books/reviews/statistics"))
+      .andExpect(status().isUnauthorized());
   }
 
   @Test
+  @WithMockUser(username = "duke")
   void shouldReturnReviewStatisticsWhenUserIsAuthenticated() throws Exception {
+    this.mockMvc
+      .perform(get("/api/books/reviews/statistics"))
+      .andExpect(status().isOk());
   }
 
   @Test
   void shouldCreateNewBookReviewForAuthenticatedUserWithValidPayload() throws Exception {
+    // given
+    String requestBody = """
+      {
+        "reviewTitle": "Great Java Book!",
+        "reviewContent": "Book is off the chain!",
+        "rating": 4
+      }
+      """;
+
+    // when
+    when(reviewService.createBookReview(eq("42"), any(BookReviewRequest.class), eq("duke"), endsWith("spring.io"))).thenReturn(84L);
+
+    this.mockMvc
+      .perform(post("/api/books/{isbn}/reviews", 42)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(requestBody)
+        .with(jwt().jwt(builder -> builder
+          .claim("email", "duke@spring.io")
+          .claim("preferred_username", "duke"))))
+      .andExpect(status().isCreated())
+      .andExpect(header().exists("Location"))
+      .andExpect(header().string("Location", Matchers.containsString("/books/42/reviews/84")));
+
+
   }
 
   @Test

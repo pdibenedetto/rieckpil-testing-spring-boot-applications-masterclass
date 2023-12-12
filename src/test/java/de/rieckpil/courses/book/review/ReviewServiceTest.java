@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 class ReviewServiceTest {
 
   @Mock
-  private ReviewVerifier mockedReviewVerifier;
+  private ReviewVerifier reviewVerifier;
 
   @Mock
   private UserService userService;
@@ -39,12 +39,23 @@ class ReviewServiceTest {
 
   @Test
   void shouldNotBeNull() {
+    assertNotNull(bookRepository);
+    assertNotNull(cut);
+    assertNotNull(reviewRepository);
+    assertNotNull(reviewVerifier);
+    assertNotNull(userService);
   }
 
-  @Test
-  @DisplayName("Write english sentence")
-  void shouldThrowExceptionWhenReviewedBookIsNotExisting() {
-  }
+//  @Test
+//  @DisplayName("Write english sentence")
+//  void shouldThrowExceptionWhenReviewedBookIsNotExisting() {
+//    // given
+//
+//    // when
+//    when(bookRepository.findByIsbn(ISBN));
+//
+//    // then
+//  }
 
   @Test
   void shouldRejectReviewWhenReviewQualityIsBad() {
